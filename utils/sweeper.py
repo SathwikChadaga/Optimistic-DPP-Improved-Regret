@@ -9,8 +9,8 @@ def perform_regret_experiment(args):
 
     # simulation lengths
     T_horizon = None # time horizon (to be set later)
-    T_horizon_list = np.linspace(10000,100000,19, dtype=int)
-    N_runs = 500 # number of simulations
+    T_horizon_list = np.linspace(1,100,10, dtype=int) #np.linspace(10000,100000,19, dtype=int)
+    N_runs = 1# 500 # number of simulations
 
     # noise and arrival rates
     def random_uniform(size = []):
