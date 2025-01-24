@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import lsq_linear  
 import matplotlib.pyplot as plt
 import networkx as nx
+import pickle as pkl
 
 # plots the network topology
 def visualize_network(edges_list, N_nodes):
@@ -22,7 +23,7 @@ def visualize_network(edges_list, N_nodes):
     plt.show()
 
 # fit curve to O(T^{1/2})
-def fit_regret_curve(T_horizon_list, dpop_regret, start_index = 0):
+def fit_regret_curve(T_horizon_list, dpop_regret, start_index = 5):
     # create T^{1/2} for given values of T
     X = np.ones([T_horizon_list.shape[0], 2])
     X[:,1] = (T_horizon_list**(1/2))*np.log(T_horizon_list)
@@ -40,20 +41,26 @@ def fit_regret_curve(T_horizon_list, dpop_regret, start_index = 0):
 def plot_regret_curve(ax, arrival_rate, noise_variance_list, show_theoretical, sweep_results_folder, plot_style, show_ylabel, label_font_size):
     # iterate for given values of noise variances
     for jj, noise_variance in enumerate(noise_variance_list):
-        current_result = np.load(sweep_results_folder + '/regret-lambda-' + str(arrival_rate).replace('.','_') + '-var-' + str(noise_variance).replace('.','_') + '.npy')     
-        ax.plot(current_result[0,:], current_result[1,:] - current_result[2,:], plot_style[jj], label = '$\sigma^2$ = ' + str(noise_variance), fillstyle = 'none', markeredgewidth=2, ms=8)  
+        with open(sweep_results_folder + '/regret-lambda-' + str(arrival_rate).replace('.','_') + '-var-' + str(noise_variance).replace('.','_') + '.pkl', 'rb') as f: 
+            current_result = pkl.load(f)   
+
+        dpop_costs =  current_result['dpop_costs']
+        stat_costs = current_result['stat_costs']
+        T_horizon_list = current_result['T_horizon_list']
+
+        ax.plot(T_horizon_list, dpop_costs - stat_costs, plot_style[jj], label = '$\sigma^2$ = ' + str(noise_variance), fillstyle = 'none', markeredgewidth=2, ms=8)  
 
         if(show_theoretical[jj]):
-            theoretical_regret = fit_regret_curve(current_result[0,:], current_result[1,:] - current_result[2,:], start_index = 6)
-            ax.plot(current_result[0,:], theoretical_regret, '--', label = r'$O(\sqrt{T}\log{T})$', linewidth=3)
+            theoretical_regret = fit_regret_curve(T_horizon_list, dpop_costs - stat_costs, start_index = 6)
+            ax.plot(T_horizon_list, theoretical_regret, '--', label = r'$O(\sqrt{T}\log{T})$', linewidth=3)
 
     if(show_ylabel): ax.set_ylabel('Regret')
     ax.set_xlabel('Time horizon')
     
     # show values in scientific notation and show exponent near axes
-    ax.set_xlim([5000,50000])
-    ax.set_xticks(ticks=5000*np.arange(1,11), labels=['{:1.0f}'.format(s) for s in 5*np.arange(1,11)])
-    ax.text(45500, -900, '$\\times 10^3$', fontdict=None, size=label_font_size)
+    ax.set_xlim([10000,100000])
+    ax.set_xticks(ticks=np.linspace(10000,100000,10), labels=['{:1.0f}'.format(s) for s in np.linspace(1,10,10)])
+    ax.text(92000, -850, '$\\times 10^4$', fontdict=None, size=label_font_size)
 
     # ax.set_xlim([5000,25000])
     # ax.set_xticks(ticks=2500*np.arange(1,11), labels=['{:1.1f}'.format(s) for s in 2.5*np.arange(1,11)])
@@ -62,7 +69,7 @@ def plot_regret_curve(ax, arrival_rate, noise_variance_list, show_theoretical, s
     # show values in scientific notation and show exponent near axes
     ax.set_ylim([0,5000])
     ax.set_yticks(ticks=np.linspace(0,5000,6), labels=['{:1.0f}'.format(s) for s in np.linspace(0,5,6)])
-    ax.text(4500, 5075, '$\\times 10^3$', fontdict=None, size=label_font_size)
+    ax.text(9000, 5075, '$\\times 10^3$', fontdict=None, size=label_font_size)
     
     handles, labels = ax.get_legend_handles_labels()
     order = [0,1,2,3,4]

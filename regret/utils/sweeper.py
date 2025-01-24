@@ -9,7 +9,7 @@ def perform_regret_experiment(args):
 
     # simulation lengths
     T_horizon = None # time horizon (to be set later)
-    T_horizon_list = np.linspace(10000,100000,10, dtype=int)
+    T_horizon_list = np.linspace(10000,100000,19, dtype=int)
     N_runs = 500 # number of simulations
 
     # noise and arrival rates
@@ -62,7 +62,7 @@ def perform_regret_experiment(args):
         simulation_params = expt.set_simulation_params(simulation_params, T_horizon_list[ii])
 
         # run experiment for this value of T
-        queueing_network = expt.run_experiment(simulation_params, custom_seed = 13)
+        queueing_network = expt.run_experiment(simulation_params, custom_seed = 0)
         
         # save cost and backlog values
         tran_cost_till_T_dpop[ii], backlog_cost_at_T_dpop[ii] = expt.calculate_total_costs(queueing_network)

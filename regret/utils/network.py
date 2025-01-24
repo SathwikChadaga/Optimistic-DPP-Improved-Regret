@@ -19,11 +19,11 @@ class OnlineQueueNetwork:
         self.noise_variance = simulation_params.noise_variance
         self.noise_distribution = simulation_params.noise_distribution
         
-        # variables to store traffic dynamics and transmission rates
+        # variables to store traffic dynamics and transmission costs
         self.queues = np.zeros([self.N_runs, self.N_nodes])
-        self.planned_edge_rates = np.zeros([self.N_runs, self.N_edges, self.T_horizon])
-        self.actual_edge_rates = np.zeros([self.N_runs, self.N_edges, self.T_horizon])
         self.arrival_rate = simulation_params.arrival_rate
+        self.total_planned_costs = np.zeros([self.N_runs])
+        self.total_actual_costs = np.zeros([self.N_runs])
         
         # initializations
         self.tt = -1
@@ -45,8 +45,8 @@ class OnlineQueueNetwork:
 
         # get actual rates and store rates
         actual_edge_rates = self.get_actual_edge_rates(planned_edge_rates)
-        self.planned_edge_rates[:, :, self.tt] = planned_edge_rates
-        self.actual_edge_rates[:, :, self.tt] = actual_edge_rates
+        self.total_planned_costs += planned_edge_rates@self.true_edge_costs
+        self.total_actual_costs += actual_edge_rates@self.true_edge_costs
     
         # queue evolution 
         internal_arrivals_departures = actual_edge_rates@self.node_edge_adjacency.T

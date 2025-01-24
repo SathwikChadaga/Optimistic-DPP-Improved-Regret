@@ -44,13 +44,10 @@ def run_experiment(simulation_params, custom_seed = None, queueing_network = Non
     return queueing_network
 
 
-def calculate_total_costs(queueing_network, cost_type = 'planned'):
-    if(cost_type == 'planned'):
-        tran_cost_per_time_per_run = queueing_network.planned_edge_rates.transpose((0,2,1))@queueing_network.true_edge_costs
-    else: # cost_type == 'actual'
-        tran_cost_per_time_per_run = queueing_network.actual_edge_rates.transpose((0,2,1))@queueing_network.true_edge_costs
-        
-    tran_cost_till_T = np.mean(np.sum(tran_cost_per_time_per_run, axis=1), axis=0)
+def calculate_total_costs(queueing_network, cost_type = 'planned'):  
+    if(cost_type == 'planned'): tran_cost_till_T = np.mean(queueing_network.total_planned_costs)
+    else: tran_cost_till_T = np.mean(queueing_network.total_actual_costs)
+    
     backlog_at_T = np.mean(np.sum(queueing_network.queues, axis=1), axis=0)
     backlog_cost_at_T = backlog_at_T*np.sum(queueing_network.true_edge_costs) # C_B = sum_{ij} c_{ij}
 
