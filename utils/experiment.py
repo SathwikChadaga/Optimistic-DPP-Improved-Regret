@@ -33,16 +33,15 @@ def run_experiment(simulation_params, custom_seed = None, queueing_network = Non
 
         # estimate edge costs from previous observation
         estimated_edge_costs = queueing_network.edge_cost_means - np.sqrt(beta*np.log((queueing_network.tt+1)/delta)/queueing_network.edge_num_pulls)
-        estimated_cost_matrix = prepare_cost_matrix(queueing_network.node_edge_adjacency, estimated_edge_costs)
+        # estimated_cost_matrix = prepare_cost_matrix(queueing_network.node_edge_adjacency, estimated_edge_costs, queueing_network.N_commodities)
 
         # get planned transmissions from the policy
-        planned_edge_rates = polc.max_weight_policy(queue_state, queueing_network.node_edge_adjacency, estimated_cost_matrix, queueing_network.edge_capacities, nu)
+        planned_edge_rates = polc.max_weight_policy(queue_state, queueing_network.node_edge_adjacency, estimated_edge_costs, queueing_network.edge_capacities, nu)
         
         # take action and update the network state 
         network_status = queueing_network.step(planned_edge_rates)
 
     return queueing_network
-
 
 def calculate_total_costs(queueing_network, cost_type = 'planned'):  
     if(cost_type == 'planned'): tran_cost_till_T = np.sum(queueing_network.planned_tran_cost_at_tt)
@@ -68,22 +67,22 @@ class SimulationParameters:
     def __init__(self, 
                  node_edge_adjacency, 
                  true_edge_costs, edge_capacities, 
-                 source_node, destination_node, 
+                 source_list, destination_list, 
                  noise_variance, noise_distribution,
-                 arrival_rate, 
+                 arrival_rate_list, 
                  N_runs, T_horizon, 
                  beta, delta, nu):
         self.N_runs              = N_runs
         self.T_horizon           = T_horizon
-        self.arrival_rate        = arrival_rate
+        self.arrival_rate_list   = arrival_rate_list
         self.noise_variance      = noise_variance
         self.noise_distribution  = noise_distribution
         self.nu                  = nu
         self.beta                = beta         
         self.delta               = delta
         self.node_edge_adjacency = node_edge_adjacency
-        self.source_node         = source_node
-        self.destination_node    = destination_node
+        self.source_list         = source_list
+        self.destination_list    = destination_list
         self.true_edge_costs     = true_edge_costs
         self.edge_capacities     = edge_capacities
 
@@ -98,7 +97,7 @@ def prepare_adjacency(edges, N_nodes):
     return node_edge_adjacency
 
 # converts cost array into matrix
-def prepare_cost_matrix(node_edge_adjacency, costs):
+def prepare_cost_matrix(node_edge_adjacency, costs, N_commodities):
     if(len(costs.shape) > 1): 
         cost_matrix = np.expand_dims(node_edge_adjacency == -1, axis=0)*costs[:, np.newaxis, :] + 0.0
         cost_matrix[:, node_edge_adjacency != -1] = np.inf
@@ -106,4 +105,6 @@ def prepare_cost_matrix(node_edge_adjacency, costs):
     else: 
         cost_matrix = (node_edge_adjacency == -1)*costs + 0.0
         cost_matrix[node_edge_adjacency != -1] = np.inf
+    
+    cost_matrix = np.repeat(cost_matrix[:,None,:,:], N_commodities, axis=1)
     return cost_matrix
