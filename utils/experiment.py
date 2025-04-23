@@ -2,19 +2,6 @@ import numpy as np
 import utils.network as qnet
 import utils.policies as polc
 
-def set_simulation_params(simulation_params, T_horizon):
-    # set T
-    simulation_params.T_horizon = T_horizon
-
-    # set nu
-    simulation_params.nu = np.sqrt(T_horizon) 
-
-    # set delta
-    noise_variance = simulation_params.noise_variance
-    if(noise_variance == 0): simulation_params.delta = 1
-    else: simulation_params.delta = T_horizon**(-2*noise_variance/(simulation_params.beta-2*noise_variance))
-
-    return simulation_params
 
 def run_experiment(simulation_params, custom_seed = None, queueing_network = None):
     # store algorithm parameters
@@ -63,40 +50,6 @@ def calculate_per_time_metrics(queueing_network, cost_type = 'planned'):
     backlog_cost_at_tt = queueing_network.backlog_at_tt*np.sum(queueing_network.true_edge_costs)
 
     return tran_cost_at_tt, tran_cost_till_tt, backlog_at_tt, backlog_cost_at_tt
-
-# class to hold all simulaiton parameters
-class SimulationParameters:
-    def __init__(self, 
-                 node_edge_adjacency, 
-                 true_edge_costs, edge_capacities, 
-                 source_list, destination_list, 
-                 noise_variance, noise_distribution,
-                 arrival_rate_list, 
-                 N_runs, T_horizon, 
-                 beta, delta, nu):
-        self.N_runs              = N_runs
-        self.T_horizon           = T_horizon
-        self.arrival_rate_list   = arrival_rate_list
-        self.noise_variance      = noise_variance
-        self.noise_distribution  = noise_distribution
-        self.nu                  = nu
-        self.beta                = beta         
-        self.delta               = delta
-        self.node_edge_adjacency = node_edge_adjacency
-        self.source_list         = source_list
-        self.destination_list    = destination_list
-        self.true_edge_costs     = true_edge_costs
-        self.edge_capacities     = edge_capacities
-
-# prepares node to edge adjacency
-def prepare_adjacency(edges, N_nodes):
-    N_edges = len(edges)
-    node_edge_adjacency = np.zeros([N_nodes, N_edges]) # node_edge_adjacency_(v,e) = {-1 if e = Out(v), 1 if e = In(v), 0 otherwise}
-    for ll, vv in enumerate(edges):
-        node_edge_adjacency[vv[0], ll] = -1
-        node_edge_adjacency[vv[1], ll] = 1
-
-    return node_edge_adjacency
 
 # converts cost array into matrix
 def prepare_cost_matrix(node_edge_adjacency, costs, N_commodities):

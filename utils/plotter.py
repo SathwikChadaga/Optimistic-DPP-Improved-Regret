@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import networkx as nx
 from scipy.optimize import lsq_linear  
 import pickle as pkl
 
@@ -9,23 +7,6 @@ def windowed_average(input_array, window_size = 15):
     output_array = np.convolve(input_array, np.ones(window_size)/window_size, mode='valid')
     return np.append(input_array[0], output_array) # append used to match input and output size
 
-# plots the network topology
-def visualize_network(edges_list, N_nodes):
-    # add edges
-    G = nx.DiGraph()
-    for edge_ii in range(len(edges_list)):
-        G.add_edge(edges_list[edge_ii][0]+1, edges_list[edge_ii][1]+1)  
-        
-    # relabel nodes
-    mapping = {v+1 : v for v in range(N_nodes)}
-    G = nx.relabel_nodes(G, mapping)
-
-    # Visualize the network
-    pos = nx.spectral_layout(G) # pos = nx.spring_layout(G) 
-    nx.draw_networkx(G, pos, with_labels=True)
-
-    plt.title("Network Visualization")
-    plt.show()
 
 
 # fit curve to O(T^{1/2})
@@ -44,10 +25,10 @@ def fit_regret_curve(T_horizon_list, dpop_regret, start_index = 5):
     return theoretical_dpop_regret
 
 # function to plot regret curve
-def plot_regret_curve(ax, arrival_rate, noise_variance_list, show_theoretical, sweep_results_folder, plot_style, show_ylabel, label_font_size):
+def plot_regret_curve(ax, arrival_rate_scaling, noise_variance_list, show_theoretical, sweep_results_folder, plot_style, show_ylabel, label_font_size):
     # iterate for given values of noise variances
     for jj, noise_variance in enumerate(noise_variance_list):
-        with open(sweep_results_folder + '/regret-lambda-' + str(arrival_rate).replace('.','_') + '-var-' + str(noise_variance).replace('.','_') + '.pkl', 'rb') as f: 
+        with open(sweep_results_folder + '/regret-lambda-' + str(arrival_rate_scaling).replace('.','_') + '-var-' + str(noise_variance).replace('.','_') + '.pkl', 'rb') as f: 
             current_result = pkl.load(f)   
 
         dpop_costs =  current_result['dpop_costs']
@@ -64,18 +45,18 @@ def plot_regret_curve(ax, arrival_rate, noise_variance_list, show_theoretical, s
     ax.set_xlabel('Time horizon')
     
     # show values in scientific notation and show exponent near axes
-    ax.set_xlim([10000,100000])
-    ax.set_xticks(ticks=np.linspace(10000,100000,10), labels=['{:1.0f}'.format(s) for s in np.linspace(1,10,10)])
-    ax.text(92000, -850, '$\\times 10^4$', fontdict=None, size=label_font_size)
+    # ax.set_xlim([10000,100000])
+    # ax.set_xticks(ticks=np.linspace(10000,100000,10), labels=['{:1.0f}'.format(s) for s in np.linspace(1,10,10)])
+    # ax.text(92000, -850, '$\\times 10^4$', fontdict=None, size=label_font_size)
 
     # ax.set_xlim([5000,25000])
     # ax.set_xticks(ticks=2500*np.arange(1,11), labels=['{:1.1f}'.format(s) for s in 2.5*np.arange(1,11)])
     # ax.text(20500, -900, '$\\times 10^3$', fontdict=None, size=label_font_size)
     
     # show values in scientific notation and show exponent near axes
-    ax.set_ylim([0,5000])
-    ax.set_yticks(ticks=np.linspace(0,5000,6), labels=['{:1.0f}'.format(s) for s in np.linspace(0,5,6)])
-    ax.text(9000, 5075, '$\\times 10^3$', fontdict=None, size=label_font_size)
+    # ax.set_ylim([0,5000])
+    # ax.set_yticks(ticks=np.linspace(0,5000,6), labels=['{:1.0f}'.format(s) for s in np.linspace(0,5,6)])
+    # ax.text(9000, 5075, '$\\times 10^3$', fontdict=None, size=label_font_size)
     
     handles, labels = ax.get_legend_handles_labels()
     order = [0,1,2,3,4]
@@ -92,11 +73,11 @@ def plot_backlog_curve(ax, unknownT_backlog_at_tt, knownT_backlog_at_tt, oracle_
     ax.plot(oracle_backlog_at_tt, color = 'C2', label = 'Oracle policy')
 
     # show values in scientific notation and show exponent near axes
-    ax.set_xticks(ticks=1000*np.arange(0,11), labels=['{:1.0f}'.format(s) for s in np.arange(0,11)])
-    ax.text(9100, -9, '$\\times 10^3$', fontdict=None, size=label_font_size)
+    # ax.set_xticks(ticks=1000*np.arange(0,11), labels=['{:1.0f}'.format(s) for s in np.arange(0,11)])
+    # ax.text(9100, -9, '$\\times 10^3$', fontdict=None, size=label_font_size)
 
-    ax.set_xlim([-250,10000])
-    ax.set_ylim([0,65])
+    # ax.set_xlim([-250,10000])
+    # ax.set_ylim([0,65])
 
     ax.set_xlabel('Time-slot')
     ax.set_ylabel('Total queue backlog')
@@ -111,11 +92,11 @@ def plot_transmission_cost_curve(ax, unknownT_tran_cost_at_tt, knownT_tran_cost_
     ax.plot(windowed_average(unknownT_tran_cost_at_tt), color = 'C0', label = 'DPOP (doubling)')
 
     # show values in scientific notation and show exponent near axes
-    ax.set_xticks(ticks=1000*np.arange(0,11), labels=['{:1.0f}'.format(s) for s in np.arange(0,11)])
-    ax.text(9100, -0.7, '$\\times 10^3$', fontdict=None, size=label_font_size)
+    # ax.set_xticks(ticks=1000*np.arange(0,11), labels=['{:1.0f}'.format(s) for s in np.arange(0,11)])
+    # ax.text(9100, -0.7, '$\\times 10^3$', fontdict=None, size=label_font_size)
 
-    ax.set_xlim([-250,10000])
-    ax.set_ylim([0,5])
+    # ax.set_xlim([-250,10000])
+    # ax.set_ylim([0,5])
 
     ax.set_xlabel('Time-slot')
     ax.set_ylabel('Instantaneous transmission cost')
