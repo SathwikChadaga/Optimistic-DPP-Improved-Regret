@@ -10,7 +10,7 @@ def windowed_average(input_array, window_size = 15):
 
 
 # fit curve to O(T^{1/2})
-def fit_regret_curve(T_horizon_list, dpop_regret, start_index = 5):
+def fit_regret_curve(T_horizon_list, dpop_regret, start_index = 3):
     # create T^{1/2} for given values of T
     X = np.ones([T_horizon_list.shape[0], 2])
     X[:,1] = (T_horizon_list**(1/2))*np.log(T_horizon_list)

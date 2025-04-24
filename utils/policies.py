@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.optimize import linprog
-def get_static_policy(node_edge_adjacency, simulation_params):
+def get_static_policy(simulation_params):
 
+    node_edge_adjacency = simulation_params.node_edge_adjacency
     N_nodes = node_edge_adjacency.shape[0]
     M_edges = node_edge_adjacency.shape[1]
     K_commodites = len(simulation_params.arrival_rate_list)
@@ -36,7 +37,12 @@ def get_static_policy(node_edge_adjacency, simulation_params):
     # solve the linear optimization problem and return results
     result = linprog(c = all_costs, A_ub = A_matrix, b_ub = b_vector, bounds = (0,None))
     if result.success == False: print("No optimal solution found.")
-    return result.x
+
+    dual = linprog(c = b_vector, A_ub = -A_matrix.T, b_ub = all_costs, bounds = (0,None))
+    if dual.success == False: print("No dual optimal solution found.")
+    backlog_cost_C_L = np.max(dual.x) # see Theorem 1 of the paper
+
+    return result.x, backlog_cost_C_L
 
 def max_weight_policy(queue_state, node_edge_adjacency, edge_costs, edge_capacities, nu):
     # calculate weights using queue differentials and edge costs

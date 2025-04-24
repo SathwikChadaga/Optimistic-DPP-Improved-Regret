@@ -36,18 +36,17 @@ def calculate_total_costs(queueing_network, cost_type = 'planned'):
     else: tran_cost_till_T = np.sum(queueing_network.actual_tran_cost_at_tt)
     
     backlog_at_T = queueing_network.backlog_at_tt[queueing_network.T_horizon-1]
-    backlog_cost_at_T = backlog_at_T*np.sum(queueing_network.true_edge_costs) # C_B = sum_{ij} c_{ij}
 
-    return tran_cost_till_T, backlog_cost_at_T
+    return tran_cost_till_T, backlog_at_T
 
 # function to calculate costs of a network after running the simulation
-def calculate_per_time_metrics(queueing_network, cost_type = 'planned'):
+def calculate_per_time_metrics(queueing_network, backlog_cost_C_B, cost_type = 'planned'):
     if(cost_type == 'planned'): tran_cost_at_tt = queueing_network.planned_tran_cost_at_tt
     else: tran_cost_at_tt = queueing_network.actual_tran_cost_at_tt
     tran_cost_till_tt = np.cumsum(tran_cost_at_tt)
 
     backlog_at_tt = queueing_network.backlog_at_tt
-    backlog_cost_at_tt = queueing_network.backlog_at_tt*np.sum(queueing_network.true_edge_costs)
+    backlog_cost_at_tt = queueing_network.backlog_at_tt*backlog_cost_C_B
 
     return tran_cost_at_tt, tran_cost_till_tt, backlog_at_tt, backlog_cost_at_tt
 
