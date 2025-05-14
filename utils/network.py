@@ -28,6 +28,13 @@ class OnlineQueueNetwork:
         self.backlog_at_tt = np.zeros([self.T_horizon])
         self.planned_tran_cost_at_tt = np.zeros([self.T_horizon])
         self.actual_tran_cost_at_tt = np.zeros([self.T_horizon])
+
+        # extra variables to store more results if needed
+        # enable this from outside after defining the queue
+        self.store_extra_info = False
+        self.extra_vars_initialized = False
+        self.cost_mape = None
+        self.all_edge_rates = None
         
         # initializations
         self.tt = -1
@@ -39,7 +46,6 @@ class OnlineQueueNetwork:
         # initial exploration 
         if(custom_seed != None): np.random.seed(custom_seed)
         self.initial_exploration()
-
     
     def step(self, planned_edge_rates):
         # check if time horizon has reached and return -1
@@ -109,8 +115,24 @@ class OnlineQueueNetwork:
         return self.true_edge_costs[np.newaxis, :] + observation_noise
     
     def store_metrics(self, queues, planned_edge_rates, actual_edge_rates):
+        
         # store current total queue backlog and current total transmission cost
         self.backlog_at_tt[self.tt] = np.mean(np.sum(queues, axis=(1,2)), axis=0)
         self.planned_tran_cost_at_tt[self.tt] = np.mean(np.sum(planned_edge_rates, axis=1)@self.true_edge_costs, axis=0)
         self.actual_tran_cost_at_tt[self.tt] = np.mean(np.sum(actual_edge_rates, axis=1)@self.true_edge_costs, axis=0)
-    
+        
+        # some more information to store, enable this from outside before running an experiment
+        def calculate_mape(y_pred, y_true, epsilon=1):
+            y_den = y_true.copy()
+            y_den[y_true == 0] = epsilon
+            return np.mean(np.abs(y_pred - y_true)/y_den, axis=0)
+        
+        if(self.store_extra_info):
+            # initialize these variables if not initialized yet
+            if(self.extra_vars_initialized == False):
+                self.cost_mape = np.zeros([self.T_horizon, self.N_edges])
+                self.all_edge_rates = np.zeros([self.T_horizon, self.N_edges])
+                self.extra_vars_initialized = True
+
+            self.cost_mape[self.tt] = calculate_mape(self.edge_cost_means, self.true_edge_costs)
+            self.all_edge_rates[self.tt, :] = np.mean(np.sum(planned_edge_rates, axis=1), axis=0) 

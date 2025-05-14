@@ -3,7 +3,7 @@ import utils.network as qnet
 import utils.policies as polc
 
 
-def run_experiment(simulation_params, custom_seed = None, queueing_network = None):
+def run_experiment(simulation_params, custom_seed = None, queueing_network = None, store_extra_info = False):
     # store algorithm parameters
     beta  = simulation_params.beta
     delta = simulation_params.delta
@@ -13,6 +13,7 @@ def run_experiment(simulation_params, custom_seed = None, queueing_network = Non
     if(queueing_network == None): 
         queueing_network = qnet.OnlineQueueNetwork(simulation_params, custom_seed)
 
+    queueing_network.store_extra_info = store_extra_info
     network_status = 0
     while(network_status == 0):
         # get queue state
@@ -20,7 +21,6 @@ def run_experiment(simulation_params, custom_seed = None, queueing_network = Non
 
         # estimate edge costs from previous observation
         estimated_edge_costs = queueing_network.edge_cost_means - np.sqrt(beta*np.log((queueing_network.tt+1)/delta)/queueing_network.edge_num_pulls)
-        # estimated_cost_matrix = prepare_cost_matrix(queueing_network.node_edge_adjacency, estimated_edge_costs, queueing_network.N_commodities)
 
         # get planned transmissions from the policy
         planned_edge_rates = polc.max_weight_policy(queue_state, queueing_network.node_edge_adjacency, estimated_edge_costs, queueing_network.edge_capacities, nu)

@@ -7,8 +7,8 @@ import pickle as pkl
 # helper function to sweep parallely
 def perform_regret_experiment(args):
     # get the topology and simulation parameters
-    arrival_rate_scaling, noise_variance, save_directory = args
-    simulation_params = pars.get_simulation_params(arrival_rate_scaling, noise_variance, visualize_network=False)
+    network_type, arrival_rate_scaling, noise_variance, save_directory = args
+    simulation_params = pars.get_simulation_params(network_type, arrival_rate_scaling, noise_variance, is_regret_sim = True, visualize_network = False)
 
     # store some variables locally for ease of use
     T_horizon_list = simulation_params.T_horizon_list
@@ -43,6 +43,7 @@ def perform_regret_experiment(args):
                     'stat_costs': stat_costs, 
                     'example_edge_cost_means': queueing_network.edge_cost_means[0,:], 
                     'true_edge_costs': simulation_params.true_edge_costs}
-    save_file = 'regret-lambda-' + str(arrival_rate_scaling).replace('.','_') + '-var-' + str(noise_variance).replace('.','_') + '.pkl'
+    save_file = 'regret-lambda-' + ('%.3f'%(arrival_rate_scaling)).replace('.','_') + '-var-' + str(noise_variance).replace('.','_') + '.pkl'
     if(save_directory is not None): 
-        with open(save_directory + '/' + save_file, 'wb') as f: pkl.dump(save_result, f)
+        with open(save_directory + '/' + network_type + '/' + save_file, 'wb') as f: 
+            pkl.dump(save_result, f)
