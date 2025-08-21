@@ -35,7 +35,6 @@ def get_simulation_params(network_type = 'multi-user', arrival_rate_scaling = No
     if(noise_variance == None): noise_variance = 0.1 if (network_type == 'multi-user') else 0.05
 
     # simulation lengths 
-    # Use T_horizon = 10000 and N_runs = 500 to recreate the plots from the paper
     T_horizon = 100000
     T_horizon_list = np.linspace(5000, 100000, 20, dtype=int)
     N_runs = 1000 if is_regret_sim else 10000 # number of simulations

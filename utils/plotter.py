@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import lsq_linear  
 import pickle as pkl
+from matplotlib.ticker import FixedLocator
 # import networkx as nx
 # import matplotlib.pyplot as plt
 
@@ -64,15 +65,17 @@ def plot_regret_curve(ax, network_type, backlog_cost_C_B, arrival_rate_scaling, 
     handles, labels = ax.get_legend_handles_labels()
     order = [0,1,2,3,4]
     order.reverse()
-    ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc='best')
+    location = 'best'
+    if(round(arrival_rate_scaling, 3) == round(1.575/3, 3)): location = 'lower right'
+    ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc=location)
     
     ax.grid()
 
 # function to plot total queue backlogs
 def plot_backlog_curve(ax, network_type, unknownT_backlog_at_tt, knownT_backlog_at_tt, oracle_backlog_at_tt, label_font_size):
-    ax.plot(unknownT_backlog_at_tt, color = 'C0', label = 'DPOP (doubling)')
-    ax.plot(knownT_backlog_at_tt, color = 'C1', label = 'DPOP (given T)')
-    ax.plot(oracle_backlog_at_tt, color = 'C2', label = 'Oracle policy')
+    ax.plot(unknownT_backlog_at_tt, color = 'C0', label = 'DPOP (doubling)', linewidth=2)
+    ax.plot(knownT_backlog_at_tt, color = 'C1', label = 'DPOP (given T)', linewidth=2)
+    ax.plot(oracle_backlog_at_tt, color = 'C2', label = 'Oracle policy', linewidth=2)
 
     ax.set_xlim([-2500,100000])
 
@@ -89,7 +92,7 @@ def plot_backlog_curve(ax, network_type, unknownT_backlog_at_tt, knownT_backlog_
 
     # show exponent information near axes
     y_lim_val = ax.get_ylim(); x_lim_val = ax.get_xlim()
-    ax.text(x_lim_val[0]+0.9*(x_lim_val[1] - x_lim_val[0]), y_lim_val[0]-0.13*(y_lim_val[1] - y_lim_val[0]), \
+    ax.text(x_lim_val[0]+0.9*(x_lim_val[1] - x_lim_val[0]), y_lim_val[0]-0.11*(y_lim_val[1] - y_lim_val[0]), \
             '$\\times 10^4$', fontdict=None, size=label_font_size)
     if(network_type == 'multi-user'): ax.text(x_lim_val[0]-0.12*(x_lim_val[1] - x_lim_val[0]), y_lim_val[0]+0.955*(y_lim_val[1] - y_lim_val[0]), \
                                               y_exponent_label, fontdict=None, size=label_font_size)
@@ -107,9 +110,9 @@ def windowed_average(input_array, window_size = 250):
 
 # function to plot total transmission costs
 def plot_transmission_cost_curve(ax, network_type, unknownT_tran_cost_at_tt, knownT_tran_cost_at_tt, oracle_tran_cost_at_tt, label_font_size):
-    ax.plot(windowed_average(oracle_tran_cost_at_tt), color = 'C2', label = 'Oracle policy')
-    ax.plot(windowed_average(knownT_tran_cost_at_tt), color = 'C1', label = 'DPOP (given T)')
-    ax.plot(windowed_average(unknownT_tran_cost_at_tt), color = 'C0', label = 'DPOP (doubling)')
+    ax.plot(windowed_average(oracle_tran_cost_at_tt), color = 'C2', label = 'Oracle policy', linewidth=2)
+    ax.plot(windowed_average(knownT_tran_cost_at_tt), color = 'C1', label = 'DPOP (given T)', linewidth=2)
+    ax.plot(windowed_average(unknownT_tran_cost_at_tt), color = 'C0', label = 'DPOP (doubling)', linewidth=2)
 
     ax.set_xlim([-2500,100000])
     stat_cost = windowed_average(oracle_tran_cost_at_tt)[-1] 
@@ -120,7 +123,7 @@ def plot_transmission_cost_curve(ax, network_type, unknownT_tran_cost_at_tt, kno
 
     # show exponent information near axes
     y_lim_val = ax.get_ylim(); x_lim_val = ax.get_xlim()
-    ax.text(x_lim_val[0]+0.9*(x_lim_val[1] - x_lim_val[0]), y_lim_val[0]-0.13*(y_lim_val[1] - y_lim_val[0]), \
+    ax.text(x_lim_val[0]+0.9*(x_lim_val[1] - x_lim_val[0]), y_lim_val[0]-0.11*(y_lim_val[1] - y_lim_val[0]), \
             '$\\times 10^4$', fontdict=None, size=label_font_size)
 
     ax.set_xlabel('Time-slot')
@@ -129,7 +132,46 @@ def plot_transmission_cost_curve(ax, network_type, unknownT_tran_cost_at_tt, kno
     handles, labels = ax.get_legend_handles_labels()
     order = [0,1,2]
     order.reverse()
-    ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc = 'lower right')
+    ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc = 'best')
 
     ax.grid()
+
+def get_average_rates(edge_rates, edge_capacities, until_T = -1):
+    return np.mean(edge_rates[:until_T,:], axis = 0)/edge_capacities
+
+def plot_edge_utilization(ax, until_T_list, until_T_labels, dpop_rates, oracle_rates, edge_capacities):
+
+    sorted_indices = np.argsort(get_average_rates(oracle_rates, edge_capacities))[-1::-1]
+
+    mult = len(until_T_list)+1
+    width = 2
+    offset = 2
+    x = (mult*width + offset)*np.arange(oracle_rates.shape[1])
+
+    for ii, until_T in enumerate(until_T_list):
+        ax.bar(x + ii*width, get_average_rates(dpop_rates, edge_capacities, until_T)[sorted_indices], width, label='DPOP (until '+str(until_T_labels[ii])+')')
+    ax.bar(x+(mult-1)*width, get_average_rates(oracle_rates, edge_capacities)[sorted_indices], width, label='Oracle')
+
+    
+    # ax.set_xlim([x[0]-2*offset, x[-1] + mult*width + offset])
+    ax.grid()
+    ax.legend()
+    if(sorted_indices.shape[0]<20): 
+        temp2 = np.char.mod('$e_%d$', np.arange(oracle_rates.shape[1])+1)
+        ax.set_xticks(x+width*mult/2-width/2, temp2)
+    else:
+        temp1 = x+width*mult/2-width/2
+        temp2 = np.char.mod('$e_%d$', np.arange(oracle_rates.shape[1])+1)
+        ax.set_xticks(temp1[::], temp2[::], minor=False)
+        ax.minorticks_on()
+        ax.xaxis.set_minor_locator(FixedLocator(temp1[1::2]))
+        ax.yaxis.set_tick_params(which='minor', bottom=False)
+    ax.set_axisbelow(True)
+
+    ax.set_xlabel('Edges (sorted by oracle\'s traffic)')
+    ax.set_ylabel('Edge traffic (% usage)')
+
+    # ax.set_ylim([0, 1.2])
+    ax.set_xlim([x[0]-width, x[8]-width])
+    
 
