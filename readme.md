@@ -1,8 +1,9 @@
 # Drift Plus Optimistic Penalty - Improved $O(\sqrt{T})$ Regret
 
-This repository contains simulations of the drift-plus-optimistic-penalty policy from [1]. Please cite [1] if you use any of this repository's code in your work.
+This repository contains simulations of the drift-plus-optimistic-penalty policy from [1] and [2]. Please cite [1] if you use any of this repository's code in your work.
 
 [1] S. Chadaga and E. Modiano, "Drift Plus Optimistic Penalty – A Learning Framework for Stochastic Network Optimization," IEEE INFOCOM 2025 - IEEE Conference on Computer Communications, London, United Kingdom, 2025, pp. 1-10, doi: 10.1109/INFOCOM55648.2025.11044621. 
+[2] S. Chadaga and E. Modiano, “Drift Plus Optimistic Penalty: A Learning Framework for Stochastic Network Optimization with Improved Regret Bounds,” arXiv.org, Sep. 03, 2025. https://arxiv.org/abs/2509.03762
 
 ## Files Description
 - `dpop_regret.ipynb` runs the experiment for different values of time horizon and shows the regret curve.
