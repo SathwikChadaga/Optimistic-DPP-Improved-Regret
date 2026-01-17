@@ -2,7 +2,7 @@
 
 This repository contains simulations of the drift-plus-optimistic-penalty policy from [1] and [2]. 
 
-Please cite [1] if you use any of this repository's code in your work.
+Please cite this work using [1] if you use any of this repository's code in your work.
 
 [1] S. Chadaga and E. Modiano, "Drift Plus Optimistic Penalty – A Learning Framework for Stochastic Network Optimization," IEEE INFOCOM 2025 - IEEE Conference on Computer Communications, London, United Kingdom, 2025, pp. 1-10, doi: 10.1109/INFOCOM55648.2025.11044621. 
 
